@@ -75,7 +75,28 @@ cursor = conn.cursor()
 # TODO 2: Require TWO conditions to be true: the document must match the requested 'doc_id', AND the document's 'owner_id' must match the currently looged-in user's ID(stored in the Flask session).
 # TODO 3: Update the parameter tuple(...) to safely pass both variable into your new query.
 
-cursor.execute("SELECT title, content FROM documents WHERE doc_id = 
+cursor.execute("SELECT title, content FROM documents WHERE doc_id = ?", (requested_doc_id,))
+
+document_data = cursor.fetchone()
+conn.close()
+
+#if the document doesn't exist ( or the patched query blocks access), return an error 
+if not document_data:
+  abort(403, description="Access Denied or Document Not Found")
+  
+return render_template('document.html', title=document_data[0], content=document_data[1])
+
+
+@app.route('/logout')
+def logout():
+  session.clear()
+  return redirect(url_for('login'))
+
+
+if __name__  == '__main__':
+  app.run(host = '0.0.0.0', port=3000, debug=True)
+
+
 
 
 
